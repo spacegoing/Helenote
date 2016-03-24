@@ -53,7 +53,7 @@ public class NotesContract {
         public static final String COLUMN_TIME = "time";
 
         // Version is stored in long
-        public static final String COLUMN_EDITED_TIME = "version";
+        public static final String COLUMN_EDITED_TIME = "last_edited_time";
 
         // Content String
         public static final String COLUMN_CONTENT = "content";
@@ -72,7 +72,7 @@ public class NotesContract {
         }
     }
 
-    /* Inner class that defines the table contents of the weather table */
+    /* Inner class that defines the table contents of the note table */
     public static final class NoteEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI =
@@ -86,14 +86,13 @@ public class NotesContract {
         public static final String TABLE_NAME = "note_table";
 
         // Date, stored as long in milliseconds since the epoch
-        public static final String COLUMN_TIME = "time";
+        public static final String COLUMN_TIME = RevisionEntry.COLUMN_TIME;
 
-        // Weather id as returned by API, to identify the icon to be used
-        public static final String COLUMN_CONTENT = "content";
+        public static final String COLUMN_CONTENT = RevisionEntry.COLUMN_CONTENT;
 
-        // Short description and long description of the weather, as provided by API.
-        // e.g "clear" vs "sky is clear".
+        // Label String and Default label
         public static final String COLUMN_LABEL = "label";
+        public static final String DEFAULT_LABEL = "no_label";
 
         public static Uri buildNoteWithID(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

@@ -132,6 +132,60 @@ public class NotesProvider extends ContentProvider {
         );
     }
 
+    private int deleteNoteByTime(Uri uri) {
+        String[] selectionArgs;
+        String selection;
+        int rowsDeleted;
+
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        long time = NotesContract.NoteEntry.getTimeFromUri(uri);
+
+        selection = sNoteTimeSelection;
+        selectionArgs = new String[]{Long.toString(time)};
+
+        rowsDeleted = db.delete(NotesContract.NoteEntry.TABLE_NAME, selection, selectionArgs);
+        rowsDeleted += db.delete(NotesContract.RevisionEntry.TABLE_NAME, selection, selectionArgs);
+
+        return rowsDeleted;
+    }
+
+    private int updateNoteByTime(Uri uri, ContentValues values) {
+        String[] selectionArgs;
+        String selection;
+        int rowsUpdated;
+
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        long time = NotesContract.NoteEntry.getTimeFromUri(uri);
+
+        selection = sNoteTimeSelection;
+        selectionArgs = new String[]{Long.toString(time)};
+
+        rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        // Insert into revision table in the meantime
+        ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
+        long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
+        if (revision_id <= 0)
+            throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
+
+        return rowsUpdated;
+    }
+
+    private int updateNoteByLabel(Uri uri, ContentValues values) {
+        String[] selectionArgs;
+        String selection;
+        int rowsUpdated;
+
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        String label = NotesContract.NoteEntry.getLabelFromUri(uri);
+
+        selection = sNoteLabelSelection;
+        selectionArgs = new String[]{label};
+
+        rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        return rowsUpdated;
+    }
 
     static UriMatcher buildUriMatcher() {
 
@@ -232,7 +286,7 @@ public class NotesProvider extends ContentProvider {
     }
 
     /*
-        Student: Add the ability to insert Locations to the implementation of this function.
+        ability to insert Notes to the implementation of this function.
      */
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
@@ -241,21 +295,19 @@ public class NotesProvider extends ContentProvider {
         Uri returnUri;
 
         switch (match) {
-            case NOTE: {
-                normalizeDate(values);
-                long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
+            case NOTE_WITH_TIME: {
+                long _id = db.insert(NotesContract.NoteEntry.TABLE_NAME, null, values);
                 if (_id > 0)
-                    returnUri = WeatherContract.WeatherEntry.buildWeatherUri(_id);
+                    returnUri = NotesContract.NoteEntry.buildNoteWithID(_id);
                 else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
-                break;
-            }
-            case NOTE_WITH_LABEL: {
-                long _id = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, values);
-                if (_id > 0)
-                    returnUri = WeatherContract.LocationEntry.buildLocationUri(_id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                    throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
+
+                // Insert into revision table in the meantime
+                ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
+                long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
+                if (revision_id <= 0)
+                    throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
+
                 break;
             }
             default:
@@ -265,21 +317,22 @@ public class NotesProvider extends ContentProvider {
         return returnUri;
     }
 
+    // Read From Note Values. Remove Label. Insert Edited Time by system time.
+    private ContentValues changeRevisionValuesFromNoteValues(ContentValues values) {
+        values.remove(NotesContract.NoteEntry.COLUMN_LABEL);
+        values.put(NotesContract.RevisionEntry.COLUMN_EDITED_TIME, System.currentTimeMillis());
+        return values;
+    }
+
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         int rowsDeleted;
-        // this makes delete all rows return the number of rows deleted
+        // this makes delete all rows (Included Revisions) return the number of rows deleted
         if (null == selection) selection = "1";
         switch (match) {
-            case NOTE:
-                rowsDeleted = db.delete(
-                        WeatherContract.WeatherEntry.TABLE_NAME, selection, selectionArgs);
-                break;
-            case NOTE_WITH_LABEL:
-                rowsDeleted = db.delete(
-                        WeatherContract.LocationEntry.TABLE_NAME, selection, selectionArgs);
+            case NOTE_WITH_TIME:
+                rowsDeleted = deleteNoteByTime(uri);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -291,14 +344,6 @@ public class NotesProvider extends ContentProvider {
         return rowsDeleted;
     }
 
-    private void normalizeDate(ContentValues values) {
-        // normalize the date value
-        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE)) {
-            long dateValue = values.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
-            values.put(WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.normalizeDate(dateValue));
-        }
-    }
-
     @Override
     public int update(
             @NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
@@ -307,14 +352,11 @@ public class NotesProvider extends ContentProvider {
         int rowsUpdated;
 
         switch (match) {
-            case NOTE:
-                normalizeDate(values);
-                rowsUpdated = db.update(WeatherContract.WeatherEntry.TABLE_NAME, values, selection,
-                        selectionArgs);
+            case NOTE_WITH_TIME:
+                rowsUpdated = updateNoteByTime(uri,values);
                 break;
             case NOTE_WITH_LABEL:
-                rowsUpdated = db.update(WeatherContract.LocationEntry.TABLE_NAME, values, selection,
-                        selectionArgs);
+                rowsUpdated = updateNoteByLabel(uri,values);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -325,35 +367,8 @@ public class NotesProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    @Override
-    public int bulkInsert(@NonNull Uri uri, ContentValues[] values) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        final int match = sUriMatcher.match(uri);
-        switch (match) {
-            case NOTE:
-                db.beginTransaction();
-                int returnCount = 0;
-                try {
-                    for (ContentValues value : values) {
-                        normalizeDate(value);
-                        long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
-                        }
-                    }
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-                getContext().getContentResolver().notifyChange(uri, null);
-                return returnCount;
-            default:
-                return super.bulkInsert(uri, values);
-        }
-    }
-
-    // You do not need to call this method. This is a method specifically to assist the testing
-    // framework in running smoothly. You can read more at:
+    // This is a method specifically to assist the testing
+    // framework in running smoothly.
     // http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()
     @Override
     @TargetApi(11)

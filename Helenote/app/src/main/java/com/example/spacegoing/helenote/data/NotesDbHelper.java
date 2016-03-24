@@ -9,7 +9,7 @@ import com.example.spacegoing.helenote.data.NotesContract.RevisionEntry;
 
 
 /**
- * Manages a local database for weather data.
+ * Manages a local database for note data.
  */
 public class NotesDbHelper extends SQLiteOpenHelper {
 
@@ -25,9 +25,9 @@ public class NotesDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         // Create a table to hold notes.
         final String SQL_CREATE_NOTE_TABLE = "CREATE TABLE " + NoteEntry.TABLE_NAME + " (" +
-                NoteEntry._ID + " INTEGER PRIMARY KEY," +
+                NoteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 NoteEntry.COLUMN_CONTENT + " TEXT NOT NULL, " +
-                NoteEntry.COLUMN_LABEL + " TEXT NOT NULL, " +
+                NoteEntry.COLUMN_LABEL + " TEXT NOT NULL DEFAULT '" + NoteEntry.DEFAULT_LABEL +"' , " +
                 NoteEntry.COLUMN_TIME + " INTEGER UNIQUE NOT NULL " +
                 " );";
 
