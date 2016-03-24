@@ -33,22 +33,22 @@ public class NotesProvider extends ContentProvider {
             NotesContract.NoteEntry.COLUMN_LABEL
     };
 
-    static int NOTE_ID_INDEX = 0;
-    static int NOTE_COL_TIME_INDEX = 1;
-    static int NOTE_COL_CONTENT_INDEX = 2;
-    static int NOTE_COL_LABEL_INDEX = 3;
+    public static int NOTE_ID_INDEX = 0;
+    public static int NOTE_COL_TIME_INDEX = 1;
+    public static int NOTE_COL_CONTENT_INDEX = 2;
+    public static int NOTE_COL_LABEL_INDEX = 3;
 
     private static final String[] sRevisionProjection = {
             NotesContract.RevisionEntry._ID,
             NotesContract.RevisionEntry.COLUMN_TIME,
+            NotesContract.RevisionEntry.COLUMN_CONTENT,
             NotesContract.RevisionEntry.COLUMN_EDITED_TIME,
-            NotesContract.RevisionEntry.COLUMN_CONTENT
     };
 
-    static int REVISION_ID_INDEX = 0;
-    static int REVISION_COL_TIME_INDEX = 1;
-    static int REVISION_COL_VERSION_INDEX = 2;
-    static int REVISION_COL_CONTENT_INDEX = 3;
+    public static int REVISION_ID_INDEX = 0;
+    public static int REVISION_COL_TIME_INDEX = 1;
+    public static int REVISION_COL_CONTENT_INDEX = 2;
+    public static int REVISION_COL_EDITED_TIME = 3;
 
     //note_table.time = ?
     private static final String sNoteTimeSelection =
