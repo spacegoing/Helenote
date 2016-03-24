@@ -22,10 +22,6 @@ public class NotesContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // Possible paths (appended to base content URI for possible URI's)
-    // For instance, content://com.example.android.sunshine.app/weather/ is a valid path for
-    // looking at weather data. content://com.example.android.sunshine.app/givemeroot/ will fail,
-    // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
-    // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_NOTE = "note";
     public static final String PATH_REVISION = "revision";
 
@@ -56,10 +52,10 @@ public class NotesContract {
         // Date, stored as long in milliseconds since the epoch
         public static final String COLUMN_TIME = "time";
 
-        // Humidity is stored as a float representing percentage
+        // Version is stored in long
         public static final String COLUMN_EDITED_TIME = "version";
 
-        // Weather id as returned by API, to identify the icon to be used
+        // Content String
         public static final String COLUMN_CONTENT = "content";
 
         public static Uri buildRevisionWithID(long id) {
