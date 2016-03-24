@@ -51,70 +51,89 @@ public class NotesProvider extends ContentProvider {
     static int REVISION_COL_CONTENT_INDEX = 3;
 
     //note_table.time = ?
-    private static final String sNoteSelection =
-            NotesContract.NoteEntry.TABLE_NAME+
+    private static final String sNoteTimeSelection =
+            NotesContract.NoteEntry.TABLE_NAME +
                     "." + NotesContract.NoteEntry.COLUMN_TIME + " = ?";
     //revision_table.time = ?
-    private static final String sRevisionSelection =
-            NotesContract.RevisionEntry.TABLE_NAME+
+    private static final String sRevisionTimeSelection =
+            NotesContract.RevisionEntry.TABLE_NAME +
                     "." + NotesContract.RevisionEntry.COLUMN_TIME + " = ?";
 
     //note_table.label = ?
-    private static final String sLabelSelection =
-            NotesContract.NoteEntry.TABLE_NAME+
+    private static final String sNoteLabelSelection =
+            NotesContract.NoteEntry.TABLE_NAME +
                     "." + NotesContract.NoteEntry.COLUMN_LABEL + " = ?";
 
+    // Note: ORDER BY note_table.TIME DESC
+    private static final String sNoteSortOrder = "ORDER BY " +
+            NotesContract.NoteEntry.TABLE_NAME + "." +
+            NotesContract.NoteEntry.COLUMN_TIME + "DESC";
+
+    // Revision: ORDER BY revision_table._ID DESC
+    private static final String sRevisionSortOrder = "ORDER BY " +
+            NotesContract.RevisionEntry.TABLE_NAME + "." +
+            NotesContract.RevisionEntry._ID + "DESC";
 
 
     private Cursor getNoteByTime(Uri uri) {
-        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        long startDate = WeatherContract.WeatherEntry.getStartDateFromUri(uri);
+        long time = NotesContract.NoteEntry.getTimeFromUri(uri);
 
         String[] selectionArgs;
         String selection;
 
-        if (startDate == 0) {
-            selection = sNoteSelection;
-            selectionArgs = new String[]{locationSetting};
-        } else {
-            selectionArgs = new String[]{locationSetting, Long.toString(startDate)};
-            selection = sLabelSelection;
-        }
+        selection = sNoteTimeSelection;
+        selectionArgs = new String[]{Long.toString(time)};
 
-        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
+        return mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
+                sNoteProjection,
                 selection,
                 selectionArgs,
                 null,
                 null,
-                sortOrder
+                null
         );
     }
 
-    private Cursor getWeatherByLocationSettingAndDate(
-            Uri uri, String[] projection, String sortOrder) {
-        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+    private Cursor getNoteByLabel(Uri uri) {
+        String labelFromUri = NotesContract.NoteEntry.getLabelFromUri(uri);
 
-        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
-                sLocationSettingAndDaySelection,
-                new String[]{locationSetting, Long.toString(date)},
+        String[] selectionArgs;
+        String selection;
+
+        selection = sNoteLabelSelection;
+        selectionArgs = new String[]{labelFromUri};
+
+        return mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
+                sNoteProjection,
+                selection,
+                selectionArgs,
                 null,
                 null,
-                sortOrder
+                sNoteSortOrder
         );
     }
 
-    /*
-        Students: Here is where you need to create the UriMatcher. This UriMatcher will
-        match each URI to the NOTE, NOTE_WITH_TIME, REVISION_WITH_TIME,
-        and NOTE_WITH_LABEL integer constants defined above.  You can test this by uncommenting the
-        testUriMatcher test within TestUriMatcher.
-     */
+    private Cursor getRevisionByTime(Uri uri) {
+        long time = NotesContract.RevisionEntry.getTimeFromUri(uri);
+
+        String[] selectionArgs;
+        String selection;
+
+        selection = sNoteTimeSelection;
+        selectionArgs = new String[]{Long.toString(time)};
+
+        return mOpenHelper.getReadableDatabase().query(NotesContract.RevisionEntry.TABLE_NAME,
+                sNoteProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sRevisionSortOrder
+        );
+    }
+
+
     static UriMatcher buildUriMatcher() {
-        // I know what you're thinking.  Why create a UriMatcher when you can use regular
-        // expressions instead?  Because you're not crazy, that's why.
 
         // All paths added to the UriMatcher have a corresponding code to return when a match is
         // found.  The code passed into the constructor represents the code to return for the root
@@ -176,21 +195,20 @@ public class NotesProvider extends ContentProvider {
         // and query the database accordingly.
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "weather/*/*"
-            case REVISION_WITH_TIME:
-            {
-                retCursor = getWeatherByLocationSettingAndDate(uri, projection, sortOrder);
+            // "revision/#"
+            case REVISION_WITH_TIME: {
+                retCursor = getRevisionByTime(uri);
                 break;
             }
-            // "weather/*"
+            // "note/#"
             case NOTE_WITH_TIME: {
                 retCursor = getNoteByTime(uri);
                 break;
             }
-            // "weather"
+            // "note"
             case NOTE: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        WeatherContract.WeatherEntry.TABLE_NAME,
+                        NotesContract.NoteEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -200,17 +218,9 @@ public class NotesProvider extends ContentProvider {
                 );
                 break;
             }
-            // "location"
+            // "note/*"
             case NOTE_WITH_LABEL: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        WeatherContract.LocationEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                retCursor = getNoteByLabel(uri);
                 break;
             }
 
@@ -234,7 +244,7 @@ public class NotesProvider extends ContentProvider {
             case NOTE: {
                 normalizeDate(values);
                 long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
+                if (_id > 0)
                     returnUri = WeatherContract.WeatherEntry.buildWeatherUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -242,7 +252,7 @@ public class NotesProvider extends ContentProvider {
             }
             case NOTE_WITH_LABEL: {
                 long _id = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
+                if (_id > 0)
                     returnUri = WeatherContract.LocationEntry.buildLocationUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -261,7 +271,7 @@ public class NotesProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsDeleted;
         // this makes delete all rows return the number of rows deleted
-        if ( null == selection ) selection = "1";
+        if (null == selection) selection = "1";
         switch (match) {
             case NOTE:
                 rowsDeleted = db.delete(
@@ -351,5 +361,5 @@ public class NotesProvider extends ContentProvider {
         mOpenHelper.close();
         super.shutdown();
     }
-    
+
 }

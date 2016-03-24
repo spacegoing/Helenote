@@ -62,8 +62,17 @@ public class NotesContract {
         // Weather id as returned by API, to identify the icon to be used
         public static final String COLUMN_CONTENT = "content";
 
-        public static Uri buildRevisionUri(long id) {
+        public static Uri buildRevisionWithID(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildRevisionWithTime(long time) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(time)).build();
+        }
+
+        public static long getTimeFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
         }
     }
 
@@ -90,34 +99,27 @@ public class NotesContract {
         // e.g "clear" vs "sky is clear".
         public static final String COLUMN_LABEL = "label";
 
-        public static Uri buildNoteUri(long id) {
+        public static Uri buildNoteWithID(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildNoteWithTime(long time) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(time)).build();
         }
 
         public static Uri buildNoteWithLabel(String label) {
             return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(COLUMN_LABEL, label).build();
+                    .appendPath(label).build();
         }
 
-        public static Uri buildWeatherLocationWithDate(String locationSetting, long date) {
-            return CONTENT_URI.buildUpon().appendPath(locationSetting)
-                    .appendPath(Long.toString(normalizeDate(date))).build();
-        }
-
-        public static String getLocationSettingFromUri(Uri uri) {
+        public static String getLabelFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 
-        public static long getDateFromUri(Uri uri) {
-            return Long.parseLong(uri.getPathSegments().get(2));
+        public static long getTimeFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
         }
 
-        public static long getTimeFromUri(Uri uri) {
-            String dateString = uri.getQueryParameter(COLUMN_TIME);
-            if (null != dateString && dateString.length() > 0)
-                return Long.parseLong(dateString);
-            else
-                return 0;
-        }
     }
 }
