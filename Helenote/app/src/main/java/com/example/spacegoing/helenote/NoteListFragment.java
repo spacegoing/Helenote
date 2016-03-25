@@ -2,8 +2,13 @@ package com.example.spacegoing.helenote;
 
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,19 +16,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.example.spacegoing.helenote.data.NotesContract;
+import com.example.spacegoing.helenote.data.NotesProvider;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment {
-    ArrayAdapter<String> mForecastAdapter;
+public class NoteListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int Notes_LOADER = 0;
+    private NoteListAdapter mNotesAdapter;
 
 
     public NoteListFragment() {
@@ -37,38 +41,53 @@ public class NoteListFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.main_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_create) {
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // Create some dummy data for the ListView.  Here's a sample weekly forecast
-        String[] data = {
-                "Mon 6/23 - Sunny - 31/17",
-                "Tue 6/24 - Foggy - 21/8",
-                "Wed 6/25 - Cloudy - 22/17",
-                "Thurs 6/26 - Rainy - 18/11",
-                "Fri 6/27 - Foggy - 21/10",
-                "Sat 6/28 - TRAPPED IN WEATHERSTATION - 23/18",
-                "Sun 6/29 - Sunny - 20/7"
-        };
-        List<String> weekForecast = new ArrayList<>(Arrays.asList(data));
-
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(),
-                R.layout.note_item,
-                R.id.note_item_textview,
-                weekForecast);
-
+        mNotesAdapter = new NoteListAdapter(getActivity(),null,0);
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_note_list, container, false);
 
+        // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.notes_listView);
-        listView.setAdapter(mForecastAdapter);
+        listView.setAdapter(mNotesAdapter);
+
+        // We'll call our MainActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String forecast = mForecastAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, forecast);
-                startActivity(intent);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                            .setData(
+                                    NotesContract.NoteEntry.buildNoteWithTime(
+                                    cursor.getLong(NotesProvider.NOTE_COL_TIME_INDEX)
+                            ));
+                    startActivity(intent);
+                }
             }
         });
 
@@ -76,13 +95,31 @@ public class NoteListFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.main_menu,menu);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(Notes_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        Uri NotesUri = NotesContract.NoteEntry.buildNoteUri();
+
+        return new CursorLoader(getActivity(),
+                NotesUri,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mNotesAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mNotesAdapter.swapCursor(null);
     }
 }

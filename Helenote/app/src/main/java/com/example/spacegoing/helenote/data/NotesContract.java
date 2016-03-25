@@ -94,6 +94,12 @@ public class NotesContract {
         public static final String COLUMN_LABEL = "label";
         public static final String DEFAULT_LABEL = "no_label";
 
+
+        public static Uri buildNoteUri() {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(PATH_NOTE).build();
+        }
+
         public static Uri buildNoteWithID(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }

@@ -201,6 +201,7 @@ public class NotesProvider extends ContentProvider {
         matcher.addURI(authority, NotesContract.PATH_NOTE + "/*", NOTE_WITH_LABEL);
 
         matcher.addURI(authority, NotesContract.PATH_REVISION + "/#", REVISION_WITH_TIME);
+        matcher.addURI(authority, NotesContract.PATH_REVISION, REVISION);
 
 
         return matcher;
@@ -333,6 +334,10 @@ public class NotesProvider extends ContentProvider {
         switch (match) {
             case NOTE_WITH_TIME:
                 rowsDeleted = deleteNoteByTime(uri);
+                break;
+            case REVISION:
+                final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+                rowsDeleted = db.delete(NotesContract.RevisionEntry.TABLE_NAME,null,null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
