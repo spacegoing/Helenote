@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import com.example.spacegoing.helenote.utils.PollingCheck;
 
@@ -32,8 +33,12 @@ public class TestUtilities extends AndroidTestCase {
         for (Map.Entry<String, Object> entry : valueSet) {
             String columnName = entry.getKey();
             int idx = valueCursor.getColumnIndex(columnName);
+            Log.v("columnName", columnName);
             assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
             String expectedValue = entry.getValue().toString();
+            Log.v("expectedValue", expectedValue);
+            Log.v("actualValue", valueCursor.getString(idx));
+
             assertEquals("Value '" + entry.getValue().toString() +
                     "' did not match the expected value '" +
                     expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));

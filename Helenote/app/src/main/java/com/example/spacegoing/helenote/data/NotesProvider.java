@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 /**
  * Created by spacegoing on 3/23/16.
@@ -65,14 +66,12 @@ public class NotesProvider extends ContentProvider {
                     "." + NotesContract.NoteEntry.COLUMN_LABEL + " = ?";
 
     // Note: ORDER BY note_table.TIME DESC
-    private static final String sNoteSortOrder = "ORDER BY " +
-            NotesContract.NoteEntry.TABLE_NAME + "." +
-            NotesContract.NoteEntry.COLUMN_TIME + "DESC";
+    private static final String sNoteSortOrder = NotesContract.NoteEntry.TABLE_NAME + "."
+            + NotesContract.NoteEntry.COLUMN_TIME + " DESC";
 
     // Revision: ORDER BY revision_table._ID DESC
-    private static final String sRevisionSortOrder = "ORDER BY " +
-            NotesContract.RevisionEntry.TABLE_NAME + "." +
-            NotesContract.RevisionEntry._ID + "DESC";
+    private static final String sRevisionSortOrder = NotesContract.RevisionEntry.TABLE_NAME +
+            "." + NotesContract.RevisionEntry._ID + " DESC";
 
 
     private Cursor getNoteByTime(Uri uri) {
@@ -160,7 +159,10 @@ public class NotesProvider extends ContentProvider {
         selection = sNoteTimeSelection;
         selectionArgs = new String[]{Long.toString(time)};
 
+        Log.v("dhawe", values.keySet().toString());
         rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
+        Log.v("dhawehfashdfa", values.keySet().toString());
+
 
         // Insert into revision table in the meantime
         ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
@@ -231,13 +233,15 @@ public class NotesProvider extends ContentProvider {
         switch (match) {
             // Student: Uncomment and fill out these two cases
             case REVISION_WITH_TIME:
-                return NotesContract.NoteEntry.CONTENT_TYPE;
+                return NotesContract.RevisionEntry.CONTENT_TYPE;
             case NOTE_WITH_TIME:
                 return NotesContract.NoteEntry.CONTENT_ITEM_TYPE;
             case NOTE:
                 return NotesContract.NoteEntry.CONTENT_TYPE;
             case NOTE_WITH_LABEL:
                 return NotesContract.NoteEntry.CONTENT_TYPE;
+            case REVISION:
+                return NotesContract.RevisionEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -279,7 +283,21 @@ public class NotesProvider extends ContentProvider {
                 break;
             }
 
+            case REVISION:{
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        NotesContract.RevisionEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+
             default:
+                Log.v("query provider", uri.toString());
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -311,6 +329,22 @@ public class NotesProvider extends ContentProvider {
 
                 break;
             }
+            case NOTE: {
+                long _id = db.insert(NotesContract.NoteEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = NotesContract.NoteEntry.buildNoteWithID(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
+
+                // Insert into revision table in the meantime
+                ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
+                long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
+                if (revision_id <= 0)
+                    throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
+
+                break;
+            }
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -331,13 +365,18 @@ public class NotesProvider extends ContentProvider {
         int rowsDeleted;
         // this makes delete all rows (Included Revisions) return the number of rows deleted
         if (null == selection) selection = "1";
+
         switch (match) {
             case NOTE_WITH_TIME:
                 rowsDeleted = deleteNoteByTime(uri);
                 break;
             case REVISION:
                 final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-                rowsDeleted = db.delete(NotesContract.RevisionEntry.TABLE_NAME,null,null);
+                rowsDeleted = db.delete(NotesContract.RevisionEntry.TABLE_NAME, null, null);
+                break;
+            case NOTE:
+                final SQLiteDatabase notedb = mOpenHelper.getWritableDatabase();
+                rowsDeleted = notedb.delete(NotesContract.NoteEntry.TABLE_NAME,null,null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

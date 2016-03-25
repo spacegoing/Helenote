@@ -53,6 +53,7 @@ public class TestProvider extends AndroidTestCase {
                 null,
                 null
         );
+
         mContext.getContentResolver().delete(
                 RevisionEntry.CONTENT_URI,
                 null,
@@ -194,7 +195,7 @@ public class TestProvider extends AndroidTestCase {
 
         // and let's make sure they match the ones we created
         revisionCursor.moveToFirst();
-        for (int i = 0; i <= 3; i++, revisionCursor.moveToNext()) {
+        for (int i = 0; i < 3; i++, revisionCursor.moveToNext()) {
             TestUtilities.validateCurrentRecord("testRevision.  Error validating RevisionEntry " + i,
                     revisionCursor, revisionValues[i]);
         }
@@ -216,10 +217,10 @@ public class TestProvider extends AndroidTestCase {
         assertTrue(noteRowId != -1);
         Log.d(LOG_TAG, "New row id: " + noteRowId);
 
-        ContentValues updatedValues = new ContentValues(values);
-        updatedValues.put(NoteEntry._ID, noteRowId);
-        updatedValues.put(NoteEntry.COLUMN_CONTENT, "babababababababa");
-        updatedValues.put(NoteEntry.COLUMN_LABEL, "redyellow");
+        values = TestUtilities.createNoteValues();
+        values.put(NoteEntry._ID, noteRowId);
+        values.put(NoteEntry.COLUMN_CONTENT, "babababababababa");
+        values.put(NoteEntry.COLUMN_LABEL, "redyellow");
 
         // Create a cursor with observer to make sure that the content provider is notifying
         // the observers as expected
@@ -228,9 +229,9 @@ public class TestProvider extends AndroidTestCase {
         TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
         noteCursor.registerContentObserver(tco);
 
-        Uri uri = NoteEntry.buildNoteWithTime(updatedValues.getAsLong(NoteEntry.COLUMN_TIME));
+        Uri uri = NoteEntry.buildNoteWithTime(values.getAsLong(NoteEntry.COLUMN_TIME));
 
-        int count = mContext.getContentResolver().update(uri, updatedValues, null, null);
+        int count = mContext.getContentResolver().update(uri, values, null, null);
         assertEquals(count, 1);
 
         // Test to make sure our observer is called.  If not, we throw an assertion.
@@ -242,6 +243,10 @@ public class TestProvider extends AndroidTestCase {
         noteCursor.unregisterContentObserver(tco);
         noteCursor.close();
 
+        values = TestUtilities.createNoteValues();
+        values.put(NoteEntry._ID, noteRowId);
+        values.put(NoteEntry.COLUMN_CONTENT, "babababababababa");
+        values.put(NoteEntry.COLUMN_LABEL, "redyellow");
         // A cursor is your primary interface to the query results.
         Cursor cursor = mContext.getContentResolver().query(
                 uri,
@@ -252,7 +257,7 @@ public class TestProvider extends AndroidTestCase {
         );
 
         TestUtilities.validateCursor("testUpdateLocation.  Error validating location entry update.",
-                cursor, updatedValues);
+                cursor, values);
 
         cursor.close();
     }
