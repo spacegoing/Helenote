@@ -17,6 +17,7 @@ import com.example.spacegoing.helenote.data.NotesProvider;
 public class DetailNoteActivity extends AppCompatActivity {
 
     long noteTime;
+    boolean saveNote = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +44,32 @@ public class DetailNoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.action_delete) {
+            saveNote = false;
+            finish();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     protected void onPause() {
         super.onPause();
-        TextView textView = (TextView) findViewById(R.id.editText);
-        String content = textView.getText().toString();
-
         Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
-        ContentValues value = new ContentValues();
-        value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
 
-        this.getContentResolver().update(uri, value,null,null);
-
+        if (saveNote) {
+            TextView textView = (TextView) findViewById(R.id.editText);
+            String content = textView.getText().toString();
+            ContentValues value = new ContentValues();
+            value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
+            getContentResolver().update(uri, value, null, null);
+        } else {
+            getContentResolver().delete(uri,null,null);
+        }
     }
 
 }

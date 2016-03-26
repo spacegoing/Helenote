@@ -155,6 +155,9 @@ public class NotesProvider extends ContentProvider {
         selectionArgs = new String[]{Long.toString(time)};
 
         rowsDeleted = db.delete(NotesContract.NoteEntry.TABLE_NAME, selection, selectionArgs);
+
+        selection = sRevisionTimeSelection;
+        selectionArgs = new String[]{Long.toString(time)};
         rowsDeleted += db.delete(NotesContract.RevisionEntry.TABLE_NAME, selection, selectionArgs);
 
         return rowsDeleted;
@@ -175,7 +178,7 @@ public class NotesProvider extends ContentProvider {
 
         if(!values.containsKey(NotesContract.NoteEntry.COLUMN_TIME))
             values.put(NotesContract.NoteEntry.COLUMN_TIME,time);
-        
+
         // Insert into revision table in the meantime
         ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
         long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);

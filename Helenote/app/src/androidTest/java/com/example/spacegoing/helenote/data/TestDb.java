@@ -79,7 +79,7 @@ public class TestDb extends AndroidTestCase {
 
         // if this fails, it means that database doesn't contain all of the required location
         // entry columns
-        assertTrue("Error: The database doesn't contain all of the required location entry columns",
+        assertTrue("Error: The database doesn't contain all of the required note entry columns",
                 NoteColumnHashSet.isEmpty());
         db.close();
     }
@@ -91,17 +91,12 @@ public class TestDb extends AndroidTestCase {
 
     public void testNoteTable() {
         // First insert the location, and then use the NoteRowId to insert
-        // the weather. Make sure to cover as many failure cases as you can.
-
-        // Instead of rewriting all of the code we've already written in testLocationTable
-        // we can move this code to insertLocation and then call insertLocation from both
-        // tests. Why move it? We need the code to return the ID of the inserted location
-        // and our testLocationTable can only return void because it's a test.
+        // the note. Make sure to cover as many failure cases as you can.
 
         long NoteRowId = insertNote();
 
         // Make sure we have a valid row ID.
-        assertFalse("Error: Location Not Inserted Correctly", NoteRowId == -1L);
+        assertFalse("Error: Note Not Inserted Correctly", NoteRowId == -1L);
 
         SQLiteDatabase db = new NotesDbHelper(
                 this.mContext).getWritableDatabase();
@@ -118,15 +113,15 @@ public class TestDb extends AndroidTestCase {
         );
 
         // Move the cursor to the first valid database row and check to see if we have any rows
-        assertTrue("Error: No Records returned from location query", NoteCursor.moveToFirst());
+        assertTrue("Error: No Records returned from note query", NoteCursor.moveToFirst());
 
         ContentValues NoteValues = TestUtilities.createNoteValues();
         // Fifth Step: Validate the location Query
-        TestUtilities.validateCurrentRecord("testInsertReadDb weatherEntry failed to validate",
+        TestUtilities.validateCurrentRecord("testInsertReadDb noteEntry failed to validate",
                 NoteCursor, NoteValues);
 
         // Move the cursor to demonstrate that there is only one record in the database
-        assertFalse("Error: More than one record returned from weather query",
+        assertFalse("Error: More than one record returned from note query",
                 NoteCursor.moveToNext());
 
         // Sixth Step: Close cursor and database
@@ -169,16 +164,16 @@ public class TestDb extends AndroidTestCase {
 
         // Move the cursor to a valid database row and check to see if we got any records back
         // from the query
-        assertTrue("Error: No Records returned from location query", cursor.moveToFirst());
+        assertTrue("Error: No Records returned from note query", cursor.moveToFirst());
 
         // Fifth Step: Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
-        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed",
+        TestUtilities.validateCurrentRecord("Error: note Query Validation Failed",
                 cursor, testValues);
 
         // Move the cursor to demonstrate that there is only one record in the database
-        assertFalse("Error: More than one record returned from location query",
+        assertFalse("Error: More than one record returned from note query",
                 cursor.moveToNext());
 
         // Sixth Step: Close Cursor and Database
