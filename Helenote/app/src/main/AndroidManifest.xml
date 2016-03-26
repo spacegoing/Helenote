@@ -20,15 +20,16 @@
         <activity
             android:name=".DetailNoteActivity"
             android:label="@string/title_activity_detail"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName=".MainActivity" />
 
         <provider
             android:name=".data.NotesProvider"
             android:authorities="com.example.spacegoing.helenote" />
 
-        <activity android:name=".CreateNoteActivity"
-            android:parentActivityName=".MainActivity"></activity>
-
+        <activity
+            android:name=".CreateNoteActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity android:name=".HistoryNoteActivity"></activity>
     </application>
 
 </manifest>

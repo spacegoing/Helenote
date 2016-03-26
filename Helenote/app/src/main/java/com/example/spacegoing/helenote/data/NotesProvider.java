@@ -2,6 +2,7 @@ package com.example.spacegoing.helenote.data;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -25,6 +26,7 @@ public class NotesProvider extends ContentProvider {
 
     static final int REVISION = 300;
     static final int REVISION_WITH_TIME = 301;
+    static final int REVISION_WITH_ID = 302;
 
     // Define Projection and Index
     private static final String[] sNoteProjection = {
@@ -49,7 +51,7 @@ public class NotesProvider extends ContentProvider {
     public static int REVISION_ID_INDEX = 0;
     public static int REVISION_COL_TIME_INDEX = 1;
     public static int REVISION_COL_CONTENT_INDEX = 2;
-    public static int REVISION_COL_EDITED_TIME = 3;
+    public static int REVISION_COL_EDITED_TIME_INDEX = 3;
 
     //note_table.time = ?
     private static final String sNoteTimeSelection =
@@ -59,6 +61,9 @@ public class NotesProvider extends ContentProvider {
     private static final String sRevisionTimeSelection =
             NotesContract.RevisionEntry.TABLE_NAME +
                     "." + NotesContract.RevisionEntry.COLUMN_TIME + " = ?";
+    private static final String sRevisionIDSelection =
+            NotesContract.RevisionEntry.TABLE_NAME +
+                    "." + NotesContract.RevisionEntry._ID + " = ?";
 
     //note_table.label = ?
     private static final String sNoteLabelSelection =
@@ -130,11 +135,11 @@ public class NotesProvider extends ContentProvider {
         String[] selectionArgs;
         String selection;
 
-        selection = sNoteTimeSelection;
+        selection = sRevisionTimeSelection;
         selectionArgs = new String[]{Long.toString(time)};
 
         return mOpenHelper.getReadableDatabase().query(NotesContract.RevisionEntry.TABLE_NAME,
-                sNoteProjection,
+                sRevisionProjection,
                 selection,
                 selectionArgs,
                 null,
@@ -188,22 +193,6 @@ public class NotesProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    private int updateNoteByLabel(Uri uri, ContentValues values) {
-        String[] selectionArgs;
-        String selection;
-        int rowsUpdated;
-
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        String label = NotesContract.NoteEntry.getLabelFromUri(uri);
-
-        selection = sNoteLabelSelection;
-        selectionArgs = new String[]{label};
-
-        rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
-
-        return rowsUpdated;
-    }
-
     static UriMatcher buildUriMatcher() {
 
         // All paths added to the UriMatcher have a corresponding code to return when a match is
@@ -219,6 +208,7 @@ public class NotesProvider extends ContentProvider {
 
         matcher.addURI(authority, NotesContract.PATH_REVISION + "/#", REVISION_WITH_TIME);
         matcher.addURI(authority, NotesContract.PATH_REVISION, REVISION);
+        revisionID
 
 
         return matcher;
@@ -311,6 +301,20 @@ public class NotesProvider extends ContentProvider {
                 break;
             }
 
+            case REVISION_WITH_ID:{
+                String selectionIDArgs[] = {Long.toString(ContentUris.parseId(uri))};
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        NotesContract.RevisionEntry.TABLE_NAME,
+                        sRevisionProjection,
+                        sRevisionIDSelection,
+                        selectionIDArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -361,6 +365,7 @@ public class NotesProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+        db.close();
         getContext().getContentResolver().notifyChange(uri, null);
         return returnUri;
     }
@@ -386,10 +391,12 @@ public class NotesProvider extends ContentProvider {
             case REVISION:
                 final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
                 rowsDeleted = db.delete(NotesContract.RevisionEntry.TABLE_NAME, null, null);
+                db.close();
                 break;
             case NOTE:
                 final SQLiteDatabase notedb = mOpenHelper.getWritableDatabase();
                 rowsDeleted = notedb.delete(NotesContract.NoteEntry.TABLE_NAME,null,null);
+                notedb.close();
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -411,9 +418,6 @@ public class NotesProvider extends ContentProvider {
         switch (match) {
             case NOTE_WITH_TIME:
                 rowsUpdated = updateNoteByTime(uri,values);
-                break;
-            case NOTE_WITH_LABEL:
-                rowsUpdated = updateNoteByLabel(uri,values);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

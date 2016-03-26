@@ -4,8 +4,14 @@
     <item android:id="@+id/action_delete"
         android:title="@string/note_delete"
         app:showAsAction="always" />
+
     <item android:id="@+id/action_share"
         android:title="@string/note_share"
         app:showAsAction="always"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
+
+    <item android:id="@+id/action_history"
+        android:title="@string/menu_history"
+        app:showAsAction="never" />
+
 </menu>

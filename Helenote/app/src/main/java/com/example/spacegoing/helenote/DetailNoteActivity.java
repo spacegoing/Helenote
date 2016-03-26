@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -44,6 +45,7 @@ public class DetailNoteActivity extends AppCompatActivity {
 
         long noteTime;
         boolean saveNote = true;
+        boolean textChanged = false;
         String noteContent;
 
         private static final int DETAIL_LOADER = 0;
@@ -62,17 +64,26 @@ public class DetailNoteActivity extends AppCompatActivity {
             getLoaderManager().initLoader(DETAIL_LOADER, null, this);
 
             // Set textView OnChangedListener
-            TextView textView = (TextView)getActivity().findViewById(R.id.editText);
+            final TextView textView = (TextView)getActivity().findViewById(R.id.editText);
             textView.addTextChangedListener(new TextWatcher() {
+
+                String originString;
+
                 @Override
                 public void afterTextChanged(Editable s) {
                     if (mShareActionProvider != null) {
                         mShareActionProvider.setShareIntent(createShareForecastIntent());
                     }
+                    Log.v("original string",originString);
+                    Log.v("hahaha ",s.toString());
+                    if(!originString.equals(s.toString())) {
+                        textChanged = true;
+                    }
                 }
 
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    originString = s.toString();
                 }
 
                 @Override
@@ -122,6 +133,13 @@ public class DetailNoteActivity extends AppCompatActivity {
                 getActivity().finish();
                 return true;
             }
+            if(id == R.id.action_history){
+                Intent intent = new Intent(getActivity(), HistoryNoteActivity.class)
+                        .setData(
+                                NotesContract.RevisionEntry.buildRevisionWithTime(noteTime)
+                                );
+                startActivity(intent);
+            }
 
             return super.onOptionsItemSelected(item);
         }
@@ -133,11 +151,17 @@ public class DetailNoteActivity extends AppCompatActivity {
             Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
 
             if (saveNote) {
-                TextView textView = (TextView) getActivity().findViewById(R.id.editText);
-                String content = textView.getText().toString();
-                ContentValues value = new ContentValues();
-                value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
-                getActivity().getContentResolver().update(uri, value, null, null);
+
+                Log.v("asjodifjai","dafa");
+                if (textChanged) {
+                    TextView textView = (TextView) getActivity().findViewById(R.id.editText);
+                    String content = textView.getText().toString();
+                    Log.v("asjodifjai",content);
+                    ContentValues value = new ContentValues();
+                    value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
+                    getActivity().getContentResolver().update(uri, value, null, null);
+                }
+
             } else {
                 getActivity().getContentResolver().delete(uri, null, null);
             }
