@@ -10,7 +10,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,7 +37,6 @@ public class DetailNoteActivity extends AppCompatActivity {
                     .add(R.id.detail_container, new DetailNoteFragment())
                     .commit();
         }
-
     }
 
     public static class DetailNoteFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -41,7 +44,11 @@ public class DetailNoteActivity extends AppCompatActivity {
 
         long noteTime;
         boolean saveNote = true;
+        String noteContent;
+
         private static final int DETAIL_LOADER = 0;
+
+        private ShareActionProvider mShareActionProvider;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +60,25 @@ public class DetailNoteActivity extends AppCompatActivity {
         public void onActivityCreated(@Nullable Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
             getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+
+            // Set textView OnChangedListener
+            TextView textView = (TextView)getActivity().findViewById(R.id.editText);
+            textView.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(createShareForecastIntent());
+                    }
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+            });
         }
 
         @Nullable
@@ -64,6 +90,27 @@ public class DetailNoteActivity extends AppCompatActivity {
         @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             inflater.inflate(R.menu.detail_menu, menu);
+
+            // Retrieve the share menu item
+            MenuItem menuItem = menu.findItem(R.id.action_share);
+
+            // Get the provider and hold onto it to set/change the share intent.
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            if(mShareActionProvider!=null) {
+                mShareActionProvider.setShareIntent(createShareForecastIntent());
+            }
+
+        }
+
+        private Intent createShareForecastIntent() {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+            shareIntent.setType("text/plain");
+
+            TextView textView = (TextView)getActivity().findViewById(R.id.editText);
+            String content = textView.getText().toString();
+            shareIntent.putExtra(Intent.EXTRA_TEXT, content);
+            return shareIntent;
         }
 
         @Override
@@ -113,8 +160,8 @@ public class DetailNoteActivity extends AppCompatActivity {
             if (data.moveToFirst()) {
                 noteTime = data.getLong(NotesProvider.NOTE_COL_TIME_INDEX);
 
-                String content = data.getString(NotesProvider.NOTE_COL_CONTENT_INDEX);
-                textView.setText(content);
+                noteContent = data.getString(NotesProvider.NOTE_COL_CONTENT_INDEX);
+                textView.setText(noteContent);
             }
         }
 

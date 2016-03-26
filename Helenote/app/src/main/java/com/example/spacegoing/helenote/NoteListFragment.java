@@ -31,6 +31,7 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
     private NoteListAdapter mNotesAdapter;
 
 
+
     public NoteListFragment() {
         // Required empty public constructor
     }
@@ -45,6 +46,7 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.main_menu, menu);
+
     }
 
     @Override
@@ -57,6 +59,9 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
             Intent intent = new Intent(getActivity(), CreateNoteActivity.class);
             startActivity(intent);
             return true;
+        }
+        if(id == R.id.action_share){
+
         }
         return super.onOptionsItemSelected(item);
     }
