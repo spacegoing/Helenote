@@ -54,7 +54,7 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_create) {
-            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            Intent intent = new Intent(getActivity(), CreateNoteActivity.class);
             startActivity(intent);
             return true;
         }
@@ -82,7 +82,7 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
                 // if it cannot seek to that position.
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
-                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                    Intent intent = new Intent(getActivity(), DetailNoteActivity.class)
                             .setData(
                                     NotesContract.NoteEntry.buildNoteWithTime(
                                     cursor.getLong(NotesProvider.NOTE_COL_TIME_INDEX)

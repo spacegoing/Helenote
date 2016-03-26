@@ -1,6 +1,8 @@
 package com.example.spacegoing.helenote;
 
 import android.content.ContentValues;
+import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,13 +12,26 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.example.spacegoing.helenote.data.NotesContract;
+import com.example.spacegoing.helenote.data.NotesProvider;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailNoteActivity extends AppCompatActivity {
+
+    long noteTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
+        setContentView(R.layout.activity_note_detail);
+
+        TextView textView = (TextView) findViewById(R.id.editText);
+        Intent intent = getIntent();
+
+        Uri uri = intent.getData();
+        noteTime = Long.parseLong(uri.getLastPathSegment());
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+
+        cursor.moveToFirst();
+        textView.setText(cursor.getString(NotesProvider.NOTE_COL_CONTENT_INDEX));
     }
 
     @Override
@@ -37,13 +52,12 @@ public class DetailActivity extends AppCompatActivity {
         TextView textView = (TextView) findViewById(R.id.editText);
         String content = textView.getText().toString();
 
-        long noteTime = System.currentTimeMillis();
         Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
         ContentValues value = new ContentValues();
-        value.put(NotesContract.NoteEntry.COLUMN_TIME, noteTime);
-        value.put(NotesContract.NoteEntry.COLUMN_CONTENT,content);
+        value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
 
-        this.getContentResolver().insert(uri, value);
+        this.getContentResolver().update(uri, value,null,null);
 
     }
+
 }

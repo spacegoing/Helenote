@@ -83,6 +83,17 @@ public class NotesProvider extends ContentProvider {
         selection = sNoteTimeSelection;
         selectionArgs = new String[]{Long.toString(time)};
 
+        Cursor cursor = mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
+                sNoteProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+
+
         return mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
                 sNoteProjection,
                 selection,
@@ -162,7 +173,9 @@ public class NotesProvider extends ContentProvider {
 
         rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
 
-
+        if(!values.containsKey(NotesContract.NoteEntry.COLUMN_TIME))
+            values.put(NotesContract.NoteEntry.COLUMN_TIME,time);
+        
         // Insert into revision table in the meantime
         ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
         long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
