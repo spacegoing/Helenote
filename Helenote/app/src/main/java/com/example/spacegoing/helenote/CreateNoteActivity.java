@@ -36,6 +36,7 @@ public class CreateNoteActivity extends AppCompatActivity {
 
     public static class CreateNoteFragment extends Fragment {
 
+        long noteTime;
         boolean saveNote = true;
         private ShareActionProvider mShareActionProvider;
 
@@ -48,6 +49,15 @@ public class CreateNoteActivity extends AppCompatActivity {
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+            // Create an empty note
+            noteTime = System.currentTimeMillis();
+            Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
+            ContentValues value = new ContentValues();
+            value.put(NotesContract.NoteEntry.COLUMN_TIME, noteTime);
+            value.put(NotesContract.NoteEntry.COLUMN_CONTENT, "");
+            getActivity().getContentResolver().insert(uri, value);
+
             return inflater.inflate(R.layout.fragment_note_create, container, false);
         }
 
@@ -56,7 +66,7 @@ public class CreateNoteActivity extends AppCompatActivity {
             super.onActivityCreated(savedInstanceState);
 
             // Set textView OnChangedListener
-            TextView textView = (TextView)getActivity().findViewById(R.id.createText);
+            TextView textView = (TextView) getActivity().findViewById(R.id.createText);
             textView.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void afterTextChanged(Editable s) {
@@ -86,18 +96,19 @@ public class CreateNoteActivity extends AppCompatActivity {
 
             // Get the provider and hold onto it to set/change the share intent.
             mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-            if(mShareActionProvider!=null) {
+            if (mShareActionProvider != null) {
                 mShareActionProvider.setShareIntent(createShareForecastIntent());
             }
 
         }
 
+        // Get Text from view and set to an implicit Intent.
         private Intent createShareForecastIntent() {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             shareIntent.setType("text/plain");
 
-            TextView textView = (TextView)getActivity().findViewById(R.id.createText);
+            TextView textView = (TextView) getActivity().findViewById(R.id.createText);
             String content = textView.getText().toString();
             shareIntent.putExtra(Intent.EXTRA_TEXT, content);
             return shareIntent;
@@ -118,17 +129,18 @@ public class CreateNoteActivity extends AppCompatActivity {
         public void onPause() {
             super.onPause();
 
+            Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
             if (saveNote) {
+                // Update Note Content
                 TextView textView = (TextView) getActivity().findViewById(R.id.createText);
                 String content = textView.getText().toString();
-
-                long noteTime = System.currentTimeMillis();
-                Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
                 ContentValues value = new ContentValues();
-                value.put(NotesContract.NoteEntry.COLUMN_TIME, noteTime);
                 value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
 
-                getActivity().getContentResolver().insert(uri, value);
+                getActivity().getContentResolver().update(uri, value, null, null);
+            } else {
+                //Delete Note
+                getActivity().getContentResolver().delete(uri, null, null);
             }
         }
 
