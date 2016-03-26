@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 /**
  * Created by spacegoing on 3/23/16.
@@ -161,9 +160,7 @@ public class NotesProvider extends ContentProvider {
         selection = sNoteTimeSelection;
         selectionArgs = new String[]{Long.toString(time)};
 
-        Log.v("dhawe", values.keySet().toString());
         rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
-        Log.v("dhawehfashdfa", values.keySet().toString());
 
 
         // Insert into revision table in the meantime
@@ -277,7 +274,6 @@ public class NotesProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
-                Log.v("dafjasdio Extracted: ",""+retCursor.getCount());
                 break;
             }
             // "note/*"
@@ -300,7 +296,6 @@ public class NotesProvider extends ContentProvider {
             }
 
             default:
-                Log.v("query provider", uri.toString());
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -344,7 +339,6 @@ public class NotesProvider extends ContentProvider {
                 long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
                 if (revision_id <= 0)
                     throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
-                Log.v("dafjasdio Extracted: ",""+_id);
                 break;
             }
 
