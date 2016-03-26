@@ -26,9 +26,9 @@ public class NoteListAdapter extends CursorAdapter {
         string.
      */
     private String convertCursorRowToUXFormat(Cursor cursor) {
+
         String date = formatDate(cursor.getLong(NotesProvider.NOTE_COL_TIME_INDEX));
         String label = cursor.getString(NotesProvider.NOTE_COL_LABEL_INDEX);
-
 
         return date + " - " + label;
     }

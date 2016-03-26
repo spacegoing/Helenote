@@ -13,6 +13,7 @@ import android.util.Log;
 /**
  * Created by spacegoing on 3/23/16.
  */
+
 public class NotesProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
@@ -92,6 +93,7 @@ public class NotesProvider extends ContentProvider {
                 null
         );
     }
+
 
     private Cursor getNoteByLabel(Uri uri) {
         String labelFromUri = NotesContract.NoteEntry.getLabelFromUri(uri);
@@ -268,13 +270,14 @@ public class NotesProvider extends ContentProvider {
             case NOTE: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         NotesContract.NoteEntry.TABLE_NAME,
-                        projection,
+                        sNoteProjection,
                         selection,
                         selectionArgs,
                         null,
                         null,
                         sortOrder
                 );
+                Log.v("dafjasdio Extracted: ",""+retCursor.getCount());
                 break;
             }
             // "note/*"
@@ -286,7 +289,7 @@ public class NotesProvider extends ContentProvider {
             case REVISION:{
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         NotesContract.RevisionEntry.TABLE_NAME,
-                        projection,
+                        sRevisionProjection,
                         selection,
                         selectionArgs,
                         null,
@@ -341,7 +344,7 @@ public class NotesProvider extends ContentProvider {
                 long revision_id = db.insert(NotesContract.RevisionEntry.TABLE_NAME, null, changedValues);
                 if (revision_id <= 0)
                     throw new android.database.SQLException("Failed to insert row into note_tabel" + uri);
-
+                Log.v("dafjasdio Extracted: ",""+_id);
                 break;
             }
 

@@ -96,8 +96,7 @@ public class NotesContract {
 
 
         public static Uri buildNoteUri() {
-            return CONTENT_URI.buildUpon()
-                    .appendPath(PATH_NOTE).build();
+            return CONTENT_URI.buildUpon().build();
         }
 
         public static Uri buildNoteWithID(long id) {

@@ -8,10 +8,10 @@
     tools:context="com.example.spacegoing.helenote.DetailActivity">
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/textView"
-        android:layout_gravity="center" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/editText"
+        android:gravity="top"
+        android:background="@android:color/transparent"/>
 </FrameLayout>
