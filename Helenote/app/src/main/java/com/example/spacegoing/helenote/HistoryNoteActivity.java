@@ -9,7 +9,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,14 +71,6 @@ public class HistoryNoteActivity extends AppCompatActivity {
                     // if it cannot seek to that position.
                     Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                     if (cursor != null) {
-                        Log.v("###","###########");
-                        Log.v("In HistoryNote ID : ", Long.toString(cursor.getLong(NotesProvider.REVISION_ID_INDEX)));
-                        Log.v("In HistoryNote TIME : ", Long.toString(
-                                cursor.getLong(NotesProvider.REVISION_COL_TIME_INDEX))
-                        );
-                        Log.v("HistoryNote EDITED : ", Long.toString(
-                                        cursor.getLong(NotesProvider.REVISION_COL_EDITED_TIME_INDEX))
-                        );
                         Intent intent = new Intent(getActivity(), DetailNoteActivity.class)
                                 .setData(
                                         NotesContract.RevisionEntry.buildRevisionWithID(
@@ -105,8 +96,7 @@ public class HistoryNoteActivity extends AppCompatActivity {
             if (intent == null) {
                 return null;
             }
-            Log.v("###","--------------");
-            Log.v("In Parent TIME : ", intent.getData().getLastPathSegment());
+
             return new CursorLoader(getActivity(), intent.getData(), null, null, null, null);
         }
 

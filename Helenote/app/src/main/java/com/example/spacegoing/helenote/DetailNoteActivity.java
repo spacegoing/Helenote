@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -145,11 +144,9 @@ public class DetailNoteActivity extends AppCompatActivity {
 
             if (saveNote) {
 
-                Log.v("onPause: ","##############");
                 if (textChanged) {
                     TextView textView = (TextView) getActivity().findViewById(R.id.editText);
                     String content = textView.getText().toString();
-                    Log.v("saveNote: ",content);
                     ContentValues value = new ContentValues();
                     value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
                     getActivity().getContentResolver().update(uri, value, null, null);
