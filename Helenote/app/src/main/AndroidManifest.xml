@@ -17,6 +17,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
         <activity
             android:name=".DetailNoteActivity"
             android:label="@string/title_activity_detail"
@@ -29,7 +30,11 @@
         <activity
             android:name=".CreateNoteActivity"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".HistoryNoteActivity"></activity>
+
+        <activity
+            android:name=".HistoryNoteActivity"
+            android:parentActivityName=".DetailNoteActivity" />
+
     </application>
 
 </manifest>
