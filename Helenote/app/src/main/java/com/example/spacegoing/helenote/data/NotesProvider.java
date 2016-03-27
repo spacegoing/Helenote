@@ -19,13 +19,13 @@ public class NotesProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private NotesDbHelper mOpenHelper;
 
-    static final int NOTE = 100;
-    static final int NOTE_WITH_TIME = 101;
-    static final int NOTE_WITH_LABEL = 102;
+    private static final int NOTE = 100;
+    private static final int NOTE_WITH_TIME = 101;
+    private static final int NOTE_WITH_LABEL = 102;
 
-    static final int REVISION = 300;
-    static final int REVISION_WITH_TIME = 301;
-    static final int REVISION_WITH_ID = 302;
+    private static final int REVISION = 300;
+    private static final int REVISION_WITH_TIME = 301;
+    private static final int REVISION_WITH_ID = 302;
 
     // Define Projection and Index
     private static final String[] sNoteProjection = {

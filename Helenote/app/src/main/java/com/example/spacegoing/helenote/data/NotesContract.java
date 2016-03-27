@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.text.format.Time;
 
 /**
  * Defines table and column names for the weather database.
@@ -24,16 +23,6 @@ public class NotesContract {
     // Possible paths (appended to base content URI for possible URI's)
     public static final String PATH_NOTE = "note";
     public static final String PATH_REVISION = "revision";
-
-    // To make it easy to query for the exact date, we normalize all dates that go into
-    // the database to the start of the the Julian day at UTC.
-    public static long normalizeDate(long startDate) {
-        // normalize the start date to the beginning of the (UTC) day
-        Time time = new Time();
-        time.set(startDate);
-        int julianDay = Time.getJulianDay(startDate, time.gmtoff);
-        return time.setJulianDay(julianDay);
-    }
 
     /* Inner class that defines the table contents of the revision table */
     public static final class RevisionEntry implements BaseColumns {
