@@ -2,7 +2,6 @@ package com.example.spacegoing.helenote.data;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -98,7 +97,6 @@ public class NotesProvider extends ContentProvider {
         );
 
 
-
         return mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
                 sNoteProjection,
                 selection,
@@ -148,6 +146,25 @@ public class NotesProvider extends ContentProvider {
         );
     }
 
+    private Cursor getRevisionByID(Uri uri) {
+        long id = NotesContract.RevisionEntry.getIDFromUri(uri);
+
+        String[] selectionArgs;
+        String selection;
+
+        selection = sRevisionIDSelection;
+        selectionArgs = new String[]{Long.toString(id)};
+
+        return mOpenHelper.getReadableDatabase().query(NotesContract.RevisionEntry.TABLE_NAME,
+                sRevisionProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sRevisionSortOrder
+        );
+    }
+
     private int deleteNoteByTime(Uri uri) {
         String[] selectionArgs;
         String selection;
@@ -181,8 +198,8 @@ public class NotesProvider extends ContentProvider {
 
         rowsUpdated = db.update(NotesContract.NoteEntry.TABLE_NAME, values, selection, selectionArgs);
 
-        if(!values.containsKey(NotesContract.NoteEntry.COLUMN_TIME))
-            values.put(NotesContract.NoteEntry.COLUMN_TIME,time);
+        if (!values.containsKey(NotesContract.NoteEntry.COLUMN_TIME))
+            values.put(NotesContract.NoteEntry.COLUMN_TIME, time);
 
         // Insert into revision table in the meantime
         ContentValues changedValues = changeRevisionValuesFromNoteValues(values);
@@ -208,7 +225,7 @@ public class NotesProvider extends ContentProvider {
 
         matcher.addURI(authority, NotesContract.PATH_REVISION + "/#", REVISION_WITH_TIME);
         matcher.addURI(authority, NotesContract.PATH_REVISION, REVISION);
-        revisionID
+        matcher.addURI(authority, NotesContract.PATH_REVISION + "/ID/#", REVISION_WITH_ID);
 
 
         return matcher;
@@ -288,7 +305,7 @@ public class NotesProvider extends ContentProvider {
                 break;
             }
 
-            case REVISION:{
+            case REVISION: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         NotesContract.RevisionEntry.TABLE_NAME,
                         sRevisionProjection,
@@ -301,17 +318,8 @@ public class NotesProvider extends ContentProvider {
                 break;
             }
 
-            case REVISION_WITH_ID:{
-                String selectionIDArgs[] = {Long.toString(ContentUris.parseId(uri))};
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        NotesContract.RevisionEntry.TABLE_NAME,
-                        sRevisionProjection,
-                        sRevisionIDSelection,
-                        selectionIDArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+            case REVISION_WITH_ID: {
+                retCursor = getRevisionByID(uri);
                 break;
             }
 
@@ -395,7 +403,7 @@ public class NotesProvider extends ContentProvider {
                 break;
             case NOTE:
                 final SQLiteDatabase notedb = mOpenHelper.getWritableDatabase();
-                rowsDeleted = notedb.delete(NotesContract.NoteEntry.TABLE_NAME,null,null);
+                rowsDeleted = notedb.delete(NotesContract.NoteEntry.TABLE_NAME, null, null);
                 notedb.close();
                 break;
             default:
@@ -417,7 +425,7 @@ public class NotesProvider extends ContentProvider {
 
         switch (match) {
             case NOTE_WITH_TIME:
-                rowsUpdated = updateNoteByTime(uri,values);
+                rowsUpdated = updateNoteByTime(uri, values);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

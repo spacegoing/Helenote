@@ -59,7 +59,8 @@ public class NotesContract {
         public static final String COLUMN_CONTENT = "content";
 
         public static Uri buildRevisionWithID(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
+            return CONTENT_URI.buildUpon().appendPath("ID").
+                    appendPath(Long.toString(id)).build();
         }
 
         public static Uri buildRevisionWithTime(long time) {
@@ -69,6 +70,10 @@ public class NotesContract {
 
         public static long getTimeFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
+        }
+
+        public static long getIDFromUri(Uri uri) {
+            return Long.parseLong(uri.getLastPathSegment());
         }
     }
 

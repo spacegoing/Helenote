@@ -66,29 +66,22 @@ public class DetailNoteActivity extends AppCompatActivity {
             // Set textView OnChangedListener
             final TextView textView = (TextView)getActivity().findViewById(R.id.editText);
             textView.addTextChangedListener(new TextWatcher() {
-
-                String originString;
-
                 @Override
                 public void afterTextChanged(Editable s) {
                     if (mShareActionProvider != null) {
                         mShareActionProvider.setShareIntent(createShareForecastIntent());
                     }
-                    Log.v("original string",originString);
-                    Log.v("hahaha ",s.toString());
-                    if(!originString.equals(s.toString())) {
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    if(!s.toString().equals("")){
                         textChanged = true;
                     }
                 }
 
                 @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    originString = s.toString();
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
+                public void onTextChanged(CharSequence s, int start, int before, int count) { }
             });
         }
 
@@ -152,11 +145,11 @@ public class DetailNoteActivity extends AppCompatActivity {
 
             if (saveNote) {
 
-                Log.v("asjodifjai","dafa");
+                Log.v("onPause: ","##############");
                 if (textChanged) {
                     TextView textView = (TextView) getActivity().findViewById(R.id.editText);
                     String content = textView.getText().toString();
-                    Log.v("asjodifjai",content);
+                    Log.v("saveNote: ",content);
                     ContentValues value = new ContentValues();
                     value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
                     getActivity().getContentResolver().update(uri, value, null, null);

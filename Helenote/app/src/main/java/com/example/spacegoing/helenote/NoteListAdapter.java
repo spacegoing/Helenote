@@ -3,6 +3,7 @@ package com.example.spacegoing.helenote;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,9 @@ public class NoteListAdapter extends CursorAdapter {
         string.
      */
     private String convertCursorRowToUXFormat(Cursor cursor) {
+        Log.v("In Adapter: ","-----------------");
+        Log.v("Time : ", cursor.getString(NotesProvider.NOTE_COL_TIME_INDEX));
+        Log.v("Edited Time: ",cursor.getString(NotesProvider.REVISION_COL_EDITED_TIME_INDEX));
 
         String date = formatDate(cursor.getLong(NotesProvider.NOTE_COL_TIME_INDEX));
         String label = cursor.getString(NotesProvider.NOTE_COL_LABEL_INDEX);
