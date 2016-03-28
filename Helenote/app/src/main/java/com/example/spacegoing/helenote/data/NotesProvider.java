@@ -22,6 +22,7 @@ public class NotesProvider extends ContentProvider {
     public static final int NOTE = 100;
     public static final int NOTE_WITH_TIME = 101;
     public static final int NOTE_WITH_LABEL = 102;
+    public static final int NOTE_WITH_CONTENT_KEY_WORDS = 103;
 
     public static final int REVISION = 300;
     public static final int REVISION_WITH_TIME = 301;
@@ -56,6 +57,10 @@ public class NotesProvider extends ContentProvider {
     private static final String sNoteTimeSelection =
             NotesContract.NoteEntry.TABLE_NAME +
                     "." + NotesContract.NoteEntry.COLUMN_TIME + " = ?";
+    // note_table.content LIKE ?
+    private static final String sKeyWordsSelection =
+            NotesContract.NoteEntry.TABLE_NAME +
+                    "." + NotesContract.NoteEntry.COLUMN_CONTENT + " LIKE ?";
     //revision_table.time = ?
     private static final String sRevisionTimeSelection =
             NotesContract.RevisionEntry.TABLE_NAME +
@@ -72,6 +77,7 @@ public class NotesProvider extends ContentProvider {
     // Note: ORDER BY note_table.TIME DESC
     private static final String sNoteSortOrder = NotesContract.NoteEntry.TABLE_NAME + "."
             + NotesContract.NoteEntry.COLUMN_TIME + " DESC";
+
 
     // Revision: ORDER BY revision_table._ID DESC
     private static final String sRevisionSortOrder = NotesContract.RevisionEntry.TABLE_NAME +
@@ -117,7 +123,7 @@ public class NotesProvider extends ContentProvider {
         selection = sNoteLabelSelection;
         selectionArgs = new String[]{labelFromUri};
 
-        return mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
+        Cursor cursor = mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
                 sNoteProjection,
                 selection,
                 selectionArgs,
@@ -125,6 +131,29 @@ public class NotesProvider extends ContentProvider {
                 null,
                 sNoteSortOrder
         );
+
+        return cursor;
+    }
+
+    private Cursor getNoteByKeyWords(Uri uri) {
+        String keyWords = NotesContract.NoteEntry.getKeyWordsFromUri(uri);
+
+        String[] selectionArgs;
+        String selection;
+
+        selection = sKeyWordsSelection;
+        selectionArgs = new String[]{"%" + keyWords + "%"};
+
+        Cursor cursor = mOpenHelper.getReadableDatabase().query(NotesContract.NoteEntry.TABLE_NAME,
+                sNoteProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sNoteSortOrder
+        );
+
+        return cursor;
     }
 
     private Cursor getRevisionByTime(Uri uri) {
@@ -222,6 +251,7 @@ public class NotesProvider extends ContentProvider {
         matcher.addURI(authority, NotesContract.PATH_NOTE, NOTE);
         matcher.addURI(authority, NotesContract.PATH_NOTE + "/#", NOTE_WITH_TIME);
         matcher.addURI(authority, NotesContract.PATH_NOTE + "/*", NOTE_WITH_LABEL);
+        matcher.addURI(authority, NotesContract.PATH_NOTE + "/#/*", NOTE_WITH_CONTENT_KEY_WORDS);
 
         matcher.addURI(authority, NotesContract.PATH_REVISION + "/#", REVISION_WITH_TIME);
         matcher.addURI(authority, NotesContract.PATH_REVISION, REVISION);
@@ -264,6 +294,8 @@ public class NotesProvider extends ContentProvider {
                 return NotesContract.NoteEntry.CONTENT_TYPE;
             case REVISION:
                 return NotesContract.RevisionEntry.CONTENT_TYPE;
+            case NOTE_WITH_CONTENT_KEY_WORDS:
+                return NotesContract.NoteEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -302,6 +334,11 @@ public class NotesProvider extends ContentProvider {
             // "note/*"
             case NOTE_WITH_LABEL: {
                 retCursor = getNoteByLabel(uri);
+                break;
+            }
+
+            case NOTE_WITH_CONTENT_KEY_WORDS: {
+                retCursor = getNoteByKeyWords(uri);
                 break;
             }
 

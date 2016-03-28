@@ -107,8 +107,16 @@ public class NotesContract {
                     .appendPath(label).build();
         }
 
+        public static Uri buildNoteWithKeyWords(String keyWords) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath("123").appendPath(keyWords).build();
+        }
+
         public static String getLabelFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
+        }
+        public static String getKeyWordsFromUri(Uri uri) {
+            return uri.getLastPathSegment();
         }
 
         public static long getTimeFromUri(Uri uri) {

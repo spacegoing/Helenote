@@ -34,6 +34,13 @@
             android:name=".HistoryNoteActivity"
             android:parentActivityName=".DetailNoteActivity" />
 
+        <activity
+            android:name=".SearchNoteActivity"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".LabelNoteActivity"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>

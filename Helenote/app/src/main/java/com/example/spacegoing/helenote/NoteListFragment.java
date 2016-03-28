@@ -60,8 +60,15 @@ public class NoteListFragment extends Fragment implements LoaderManager.LoaderCa
             startActivity(intent);
             return true;
         }
-        if(id == R.id.action_share){
-
+        if(id == R.id.action_label){
+            Intent intent = new Intent(getActivity(), LabelNoteActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        if(id == R.id.action_search){
+            Intent intent = new Intent(getActivity(), SearchNoteActivity.class);
+            startActivity(intent);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
