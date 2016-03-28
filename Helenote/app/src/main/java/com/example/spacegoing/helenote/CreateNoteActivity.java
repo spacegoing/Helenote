@@ -21,6 +21,9 @@ import android.widget.TextView;
 
 import com.example.spacegoing.helenote.data.NotesContract;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class CreateNoteActivity extends AppCompatActivity {
 
     @Override
@@ -83,6 +86,9 @@ public class CreateNoteActivity extends AppCompatActivity {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                 }
             });
+
+            TextView dateView = (TextView) getActivity().findViewById(R.id.create_date);
+            dateView.setText(formatDateTime(noteTime));
         }
 
         @Override
@@ -137,11 +143,22 @@ public class CreateNoteActivity extends AppCompatActivity {
                 ContentValues value = new ContentValues();
                 value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
 
+                TextView labelView = (TextView) getActivity().findViewById(R.id.create_label);
+                String label = labelView.getText().toString();
+                if(!label.equals("")){
+                    value.put(NotesContract.NoteEntry.COLUMN_LABEL,label);
+                }
+
                 getActivity().getContentResolver().update(uri, value, null, null);
             } else {
                 //Delete Note
                 getActivity().getContentResolver().delete(uri, null, null);
             }
+        }
+
+        private static String formatDateTime(long dateInMillis) {
+            Date date = new Date(dateInMillis);
+            return DateFormat.getDateTimeInstance().format(date);
         }
 
     }

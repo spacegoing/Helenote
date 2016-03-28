@@ -26,6 +26,9 @@ import android.widget.TextView;
 import com.example.spacegoing.helenote.data.NotesContract;
 import com.example.spacegoing.helenote.data.NotesProvider;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class DetailNoteActivity extends AppCompatActivity {
 
     @Override
@@ -46,6 +49,7 @@ public class DetailNoteActivity extends AppCompatActivity {
         boolean saveNote = true;
         boolean textChanged = false;
         String noteContent;
+        String prevLabel;
 
         private static final int DETAIL_LOADER = 0;
 
@@ -63,7 +67,7 @@ public class DetailNoteActivity extends AppCompatActivity {
             getLoaderManager().initLoader(DETAIL_LOADER, null, this);
 
             // Set textView OnChangedListener
-            final TextView textView = (TextView)getActivity().findViewById(R.id.editText);
+            final TextView textView = (TextView)getActivity().findViewById(R.id.detail_content);
             textView.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void afterTextChanged(Editable s) {
@@ -74,13 +78,14 @@ public class DetailNoteActivity extends AppCompatActivity {
 
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    if(!s.toString().equals("")){
+                    if (!s.toString().equals("")) {
                         textChanged = true;
                     }
                 }
 
                 @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) { }
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
             });
         }
 
@@ -110,7 +115,7 @@ public class DetailNoteActivity extends AppCompatActivity {
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             shareIntent.setType("text/plain");
 
-            TextView textView = (TextView)getActivity().findViewById(R.id.editText);
+            TextView textView = (TextView)getActivity().findViewById(R.id.detail_content);
             String content = textView.getText().toString();
             shareIntent.putExtra(Intent.EXTRA_TEXT, content);
             return shareIntent;
@@ -143,12 +148,20 @@ public class DetailNoteActivity extends AppCompatActivity {
             Uri uri = NotesContract.NoteEntry.buildNoteWithTime(noteTime);
 
             if (saveNote) {
+                ContentValues value = new ContentValues();
+
+                TextView labelView = (TextView) getActivity().findViewById(R.id.detail_label);
+                String label = labelView.getText().toString();
+                if(!label.equals(prevLabel)){
+                    value.put(NotesContract.NoteEntry.COLUMN_LABEL,label);
+                    textChanged = true;
+                }
 
                 if (textChanged) {
-                    TextView textView = (TextView) getActivity().findViewById(R.id.editText);
+                    TextView textView = (TextView) getActivity().findViewById(R.id.detail_content);
                     String content = textView.getText().toString();
-                    ContentValues value = new ContentValues();
                     value.put(NotesContract.NoteEntry.COLUMN_CONTENT, content);
+
                     getActivity().getContentResolver().update(uri, value, null, null);
                 }
 
@@ -169,18 +182,34 @@ public class DetailNoteActivity extends AppCompatActivity {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            TextView textView = (TextView) getActivity().findViewById(R.id.editText);
 
             if (data.moveToFirst()) {
+                TextView contentView = (TextView) getActivity().findViewById(R.id.detail_content);
+                TextView dateView = (TextView) getActivity().findViewById(R.id.detail_date);
+                TextView labelView = (TextView) getActivity().findViewById(R.id.detail_label);
+
                 noteTime = data.getLong(NotesProvider.NOTE_COL_TIME_INDEX);
+                dateView.setText(formatDateTime(noteTime));
 
                 noteContent = data.getString(NotesProvider.NOTE_COL_CONTENT_INDEX);
-                textView.setText(noteContent);
+                contentView.setText(noteContent);
+
+                if(data.getColumnIndex(NotesContract.NoteEntry.COLUMN_LABEL)!=-1){
+                    prevLabel = data.getString(NotesProvider.NOTE_COL_LABEL_INDEX);
+                    labelView.setText(prevLabel);
+                }else{
+                    prevLabel = "";
+                }
             }
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
+        }
+
+        private static String formatDateTime(long dateInMillis) {
+            Date date = new Date(dateInMillis);
+            return DateFormat.getDateTimeInstance().format(date);
         }
 
     }
