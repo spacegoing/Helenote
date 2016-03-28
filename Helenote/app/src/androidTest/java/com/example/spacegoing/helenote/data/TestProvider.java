@@ -24,7 +24,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.test.AndroidTestCase;
-import android.util.Log;
 
 import com.example.spacegoing.helenote.data.NotesContract.NoteEntry;
 import com.example.spacegoing.helenote.data.NotesContract.RevisionEntry;
@@ -35,7 +34,6 @@ import com.example.spacegoing.helenote.data.NotesContract.RevisionEntry;
  */
 public class TestProvider extends AndroidTestCase {
 
-    public static final String LOG_TAG = TestProvider.class.getSimpleName();
     static final long FakeTimeSys = 1458813559350L;  // Fake Time String
     static final int FakeID = 0;  // Fake Time String
     static final String FakeLabel = "Blue";  // Fake Time String
@@ -213,9 +211,8 @@ public class TestProvider extends AndroidTestCase {
                 insert(NoteEntry.CONTENT_URI, values);
         long noteRowId = ContentUris.parseId(noteUri);
 
-        // Verify we got a row back.
+        // Verify got a row back.
         assertTrue(noteRowId != -1);
-        Log.d(LOG_TAG, "New row id: " + noteRowId);
 
         values = TestUtilities.createNoteValues();
         values.put(NoteEntry._ID, noteRowId);

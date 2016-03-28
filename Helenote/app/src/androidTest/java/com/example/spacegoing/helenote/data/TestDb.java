@@ -10,8 +10,6 @@ import java.util.HashSet;
 
 public class TestDb extends AndroidTestCase {
 
-    public static final String LOG_TAG = TestDb.class.getSimpleName();
-
     // To start with a clean slate
     void deleteTheDatabase() {
         mContext.deleteDatabase(NotesDbHelper.DATABASE_NAME);

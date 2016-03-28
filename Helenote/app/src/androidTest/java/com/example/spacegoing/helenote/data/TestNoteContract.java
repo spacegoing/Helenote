@@ -19,7 +19,7 @@ import android.net.Uri;
 import android.test.AndroidTestCase;
 
 /*
-    This is NOT a complete test for the WeatherContract --- just for the functions
+    This is NOT a complete test for the NoteContract --- just for the functions
     that we expect to work.
  */
 public class TestNoteContract extends AndroidTestCase {
@@ -27,7 +27,7 @@ public class TestNoteContract extends AndroidTestCase {
     // intentionally includes a slash to make sure Uri is getting quoted correctly
     static final long FakeTimeSys = 1458813559350L;  // Fake Time String
 
-    public void testBuildWeatherLocation() {
+    public void testBuildNoteUri() {
         Uri timeUri = NotesContract.NoteEntry.buildNoteWithTime(FakeTimeSys);
         assertNotNull("Error: Null Uri returned.  You must fill-in buildWeatherLocation in " +
                         "WeatherContract.",
