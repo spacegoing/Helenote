@@ -14,6 +14,7 @@
     - [Fifth Step: View Revision History](#fifth-step-view-revision-history)
     - [Sixth Step: Share your note](#sixth-step-share-your-note)
 - [JUnit Test Summary](#junit-test-summary)
+    - [Test Environment](#test-environment)
     - [Test Database](#test-database)
         - [Test Initialization](#test-initialization)
         - [Test Create Database](#test-create-database)
@@ -31,12 +32,12 @@
     - [Test UriMatcher](#test-urimatcher)
         - [Test Initialization](#test-initialization)
         - [Test UriMatcher](#test-urimatcher)
-- [Directory Structure](#directory-structure)
+- [Appendix: Directory Structure](#appendix-directory-structure)
 
 <!-- markdown-toc end -->
 # Helenote: Android Note Taker
 Helenote is a note taker for Android Platform. This is a project for
-COMP6442 Assignment 1.
+COMP6442 Assignment 1. The target SDK is API 23. The minimum SDK is API 15.
 
 ## Implemented Extensions
 
@@ -127,6 +128,18 @@ You can choose any App you like. For example, in this case we choose * Message *
 ![10](/uploads/e75140a9343c57a42a1293a51d9bd59e/10.png)
 
 # JUnit Test Summary #
+
+## Test Environment ##
+
+- Test framework:  JUnit
+
+- Environment of the test:  Android studio
+
+- Scope of the test :
+  - Database
+  - Contract
+  - Provider
+  - Matcher
 
 ## Test Database ##
 
@@ -240,7 +253,7 @@ This is to test whether `UriMatcher` can return correct Type (int value).
   - 03-27 20:57:16.467 2713-2744/com.example.spacegoing.helenote I/TestRunner: finished: testUriMatcher(com.example.spacegoing.helenote.data.TestUriMatcher)
   - 03-27 20:57:16.467 2713-2744/com.example.spacegoing.helenote I/TestRunner: passed: testUriMatcher(com.example.spacegoing.helenote.data.TestUriMatcher)
 
-# Directory Structure
+# Appendix: Directory Structure
 - helenote/
 
 -     CreateNoteActivity.java
