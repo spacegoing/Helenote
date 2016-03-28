@@ -9,4 +9,7 @@
     <string name="note_share">share</string>
     <string name="menu_history">History</string>
     <string name="create_label_hint">Label:</string>
+    <string name="note_undo">undo</string>
+    <string name="set_label">label</string>
+    <string name="main_search">search</string>
 </resources>

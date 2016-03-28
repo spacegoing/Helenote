@@ -137,6 +137,10 @@ public class DetailNoteActivity extends AppCompatActivity {
                                 );
                 startActivity(intent);
             }
+            if(id == R.id.action_undo){
+                TextView textView =(TextView) getActivity().findViewById(R.id.detail_content);
+                textView.setText(noteContent);
+            }
 
             return super.onOptionsItemSelected(item);
         }
